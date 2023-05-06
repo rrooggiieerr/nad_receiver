@@ -47,6 +47,9 @@ class NADReceiver:
         else:
             raise ValueError('Invalid operator provided %s' % operator)
 
+        return self.exec_raw_command(cmd)
+
+    def exec_raw_command(self, cmd: str) -> Optional[str]:
         try:
             msg = self.transport.communicate(cmd)
             _LOGGER.debug(f"sent: '{cmd}' reply: '{msg}'")
