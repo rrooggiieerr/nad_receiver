@@ -21,6 +21,8 @@ _LOGGER = logging.getLogger("nad_receiver")
 # Uncomment this line to see all communication with the device:
 # _LOGGER.setLevel(logging.DEBUG)
 
+class NADCommandNotSupportedError(Exception):
+    """Error to indicate a command is not supported."""
 
 class NADReceiver:
     """NAD receiver."""
@@ -53,9 +55,17 @@ class NADReceiver:
         try:
             msg = self.transport.communicate(cmd)
             _LOGGER.debug(f"sent: '{cmd}' reply: '{msg}'")
-            return msg.split('=')[1]
+
+            if msg == "":
+                raise NADCommandNotSupportedError()
+
+            if msg.casefold().startswith(command.casefold() + "="):
+                return msg.split("=")[1]
         except IndexError:
-            pass
+            _LOGGER.error(ex)
+        except UnicodeDecodeError as ex:
+            _LOGGER.error(ex)
+
         return None
 
     def main_dimmer(self, operator: str, value: Optional[str] =None) -> Optional[str]:
